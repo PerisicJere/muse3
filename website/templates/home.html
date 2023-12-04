@@ -1,0 +1,52 @@
+<!-- home.html -->
+
+{% extends "base.html" %}
+{% block title %}muse{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 align="center">Art Location</h1>
+
+    <!-- Search Bar -->
+    <form action="{{ url_for('views.home') }}" method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" class="form-control" name="search" placeholder="Search by name...">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    <!-- Sort Dropdown -->
+    <form action="{{ url_for('views.home') }}" method="get" class="mb-3">
+        <div class="input-group">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort" class="form-control">
+                <option value="">Default</option>
+                <option value="reviews_desc" {% if request.args.get('sort') == 'reviews_desc' %}selected{% endif %}>Number of Reviews (Descending)</option>
+                <option value="reviews_asc" {% if request.args.get('sort') == 'reviews_asc' %}selected{% endif %}>Number of Reviews (Ascending)</option>
+                <!-- Add more sorting options if needed in the future -->
+            </select>
+            <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+    </form>
+
+   <!-- Display Images with Location Names, Descriptions, and Review Counts -->
+<div class="image-gallery" align="center">
+    {% for image in ArtLocation %}
+        {% if image.location_image %}
+            <div class="image-container" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center;">
+                <a href="{{ url_for('views.reviews', location_id=image.location_id) }}">
+                    <img src="data:image/png;base64,{{ image.location_image }}" alt="{{ image.location_name }}" style="max-width: 100%; max-height: 200px; border-radius: 8px; flex-shrink: 0;">
+                </a>
+                <div style="flex-grow: 1; padding-left: 10px;">
+                    <h4>{{ image.location_name }}</h4>
+                    <p>{{ image.location_description }}</p>
+                    <p>Number of Reviews: {{ image.num_reviews }}</p>
+                </div>
+            </div>
+            <!-- Display the description here -->
+            <p style="font-size: smaller; padding: 0 10px;"><strong>Description:</strong> {{ image.description }}</p>
+        {% endif %}
+    {% endfor %}
+</div>
+</div>
+{% endblock %}
