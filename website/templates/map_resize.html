@@ -2,8 +2,19 @@
 {% block title %}muse Map{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<!-- Dropdown for Location Types -->
-    <<form method="get" class="filter-form">
+<style>
+    div#navbar.collapse.navbar-collapse .nav-item.nav-link#map {
+        width: 50px;
+        height: 40px;
+        position: relative; /* or absolute, fixed, etc. */
+        top: 4px;
+        left: 5px;
+    }
+</style>
+
+<div class="filter-search-container">
+    <!-- Dropdown for Location Types -->
+    <form method="get" class="filter-form">
         <label for="location-type">Filter by Location Type:</label>
         <select name="location_type" id="location-type" class="styled-dropdown">
             <option value="all">All</option>
@@ -17,8 +28,17 @@
         <button type="submit" class="apply-button">Apply Filter</button>
     </form>
 
-    <!-- Map Container -->
-    <div id="map-container" style="width: 70%; height: 400px; margin: auto;">
-        {{ folium_map_html | safe }}
-    </div>
+    <!-- Search by Address or Installation Name -->
+    <form method="get" class="search-form">
+        <label for="search">Search by Address or Installation Name:</label>
+        <input type="text" name="search" id="search" placeholder="Enter address or name">
+        <button type="submit" class="search-button">Search</button>
+    </form>
+</div>
+
+<!-- Map Container -->
+<div id="map-container" style="width: 70%; height: 400px; margin: auto;">
+    {{ folium_map_html | safe }}
+</div>
+
 {% endblock %}

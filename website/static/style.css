@@ -1,24 +1,77 @@
-/* Add this to your existing CSS or in a new CSS file */
+.filter-search-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.filter-form,
+.search-form {
+    flex: 1;
+    margin-right: 10px;
+}
+
+/* Styles for filter form */
 .filter-form {
-    margin-bottom: 20px; /* Adjust margin as needed */
+    margin-bottom: 20px;
+}
+
+.search-form {
+    margin-bottom: 20px;
 }
 
 .styled-dropdown {
-    width: 200px; /* Set your desired width */
-    padding: 10px; /* Add padding for better appearance */
-    font-size: 16px; /* Set your desired font size */
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
 }
 
-.apply-button {
-    padding: 10px 20px; /* Adjust padding as needed */
-    font-size: 16px; /* Set your desired font size */
-    background-color: #4CAF50; /* Set your desired background color */
-    color: white; /* Set your desired text color */
+.filter-form .apply-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
     border: none;
-    border-radius: 5px; /* Add border-radius for rounded corners */
+    border-radius: 5px;
     cursor: pointer;
 }
 
-.apply-button:hover {
-    background-color: #45a049; /* Change background color on hover */
+.filter-form .apply-button:hover {
+    background-color: #45a049;
 }
+
+/* Styles for search form */
+.search-form {
+    display: flex;
+    align-items: center;
+}
+
+#address {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.search-form .search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-form .search-button:hover {
+    background-color: #45a049;
+}
+
+/* Additional styles */
+div#navbar.collapse.navbar-collapse .nav-item.nav-link#map {
+    width: 50px;
+    height: 40px;
+    position: relative;
+    top: 4px;
+    left: 5px;
+}
+
+

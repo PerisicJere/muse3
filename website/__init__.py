@@ -1,3 +1,4 @@
+import secrets
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
@@ -9,7 +10,7 @@ DB_NAME = "MUSE_DB"
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = '9zh'
+    app.config['SECRET_KEY'] = secrets.token_hex(16)
     app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://root:Kr4tos12.@localhost/{DB_NAME}?auth_plugin=mysql_native_password'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)

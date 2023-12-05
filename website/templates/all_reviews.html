@@ -1,0 +1,71 @@
+<!-- all_reviews.html -->
+
+{% extends "base.html" %}
+{% block title %}{{ location_name }} Reviews{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <!-- Left side: Review Submission Form -->
+        <div class="col-md-6">
+            <h2>Submit a Review</h2>
+            <form action="{{ url_for('views.all_reviews') }}" method="post">
+                <!-- Add form fields for stars, comment, and review image -->
+                <label for="stars">Stars:</label>
+                <input type="hidden" name="location_id" value="{{ location_id }}">
+                <input type="number" name="stars" id="stars" class="form-control" placeholder="Enter stars (1-5)" required min="1" max="5">
+
+                <label for="comment">Comment:</label>
+                <textarea name="comment" id="comment" class="form-control" placeholder="Enter your comment" required></textarea>
+
+                <label for="review_image">Review Image:</label>
+                <input type="file" name="review_image" id="review_image" class="form-control">
+
+                <button type="submit" class="btn btn-success mt-2">Submit Review</button>
+            </form>
+        </div>
+
+        <!-- Right side: Display Reviews -->
+        <div class="col-md-6">
+            <h1 align="center">{{ location_name }} Reviews</h1>
+
+            <!-- Sorting Form with Hidden Input for location_id -->
+            <form action="{{ url_for('views.all_reviews') }}" method="get" class="mb-3">
+                <div class="input-group text-center">
+                    <!-- Hidden input to store the location_id -->
+                    <input type="hidden" name="location_id" value="{{ location_id }}">
+
+                    <label for="sort_order">Sort Order:</label>
+                    <select name="sort" id="sort_order" class="form-control">
+                        <option value="desc" {% if request.args.get('sort') == 'desc' %}selected{% endif %}>Desc</option>
+                        <option value="asc" {% if request.args.get('sort') == 'asc' %}selected{% endif %}>Asc</option>
+                    </select>
+
+                    <!-- Input for minimum rating -->
+                    <label for="min_rating">Min Rating:</label>
+                    <input type="number" name="min_rating" id="min_rating" class="form-control" value="{{ request.args.get('min_rating') }}" placeholder="Enter a number between 1 and 5" step="1" max="5">
+                    <button type="submit" class="btn btn-primary ml-2">Apply</button>
+                </div>
+            </form>
+
+            <!-- Display Reviews -->
+            <div class="reviews-container">
+                {% for review in reviews %}
+                    <div class="review" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center;">
+                        <div style="flex-grow: 1; padding-left: 10px;">
+                            <h4>Stars: {% for _ in range(review.stars) %}<img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">{% endfor %}</h4>
+                            <p>Comment: {{ review.comment }}</p>
+                            <p>User: {{ review.displayName }}</p>
+                            {% if review.review_image %}
+                                <img src="data:image/png;base64,{{ review.review_image }}" alt="Review Image" style="max-width: 100%; max-height: 200px; border-radius: 8px; flex-shrink: 0;">
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
