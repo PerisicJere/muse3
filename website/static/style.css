@@ -1,0 +1,24 @@
+/* Add this to your existing CSS or in a new CSS file */
+.filter-form {
+    margin-bottom: 20px; /* Adjust margin as needed */
+}
+
+.styled-dropdown {
+    width: 200px; /* Set your desired width */
+    padding: 10px; /* Add padding for better appearance */
+    font-size: 16px; /* Set your desired font size */
+}
+
+.apply-button {
+    padding: 10px 20px; /* Adjust padding as needed */
+    font-size: 16px; /* Set your desired font size */
+    background-color: #4CAF50; /* Set your desired background color */
+    color: white; /* Set your desired text color */
+    border: none;
+    border-radius: 5px; /* Add border-radius for rounded corners */
+    cursor: pointer;
+}
+
+.apply-button:hover {
+    background-color: #45a049; /* Change background color on hover */
+}

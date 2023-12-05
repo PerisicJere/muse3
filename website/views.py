@@ -1,11 +1,12 @@
 import os
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, make_response
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from . import db
 from website.models import Review, ArtLocation
 from sqlalchemy import text
 import base64
+from website.map_creator import create_folium_map
 
 views = Blueprint('views', __name__)
 
@@ -120,5 +121,21 @@ def home():
 def reviews(location_id):
     sql_query = text("SELECT stars, comment, review_image FROM review WHERE location_id = %s ")
     reviews = db.session.execute(sql_query, location_id)
-    return render_template('reviews.html', reviews_data=reviews)
+    return render_template('reviews.html', reviews_data=reviews,user=current_user)
+
+
+@views.route('/map', methods=['GET', 'POST'])
+def map():
+    should_have_border = True
+
+    if request.method == 'POST':
+        selected_type = request.form.get('location_type', 'all')
+    else:
+        selected_type = request.args.get('location_type', 'all')
+
+    m = create_folium_map(selected_type)
+
+    folium_map_html = m.get_root().render()
+
+    return render_template('map_resize.html', should_have_border=should_have_border, user=current_user, folium_map_html=folium_map_html)
 

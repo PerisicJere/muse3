@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}muse Map{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!-- Dropdown for Location Types -->
+    <<form method="get" class="filter-form">
+        <label for="location-type">Filter by Location Type:</label>
+        <select name="location_type" id="location-type" class="styled-dropdown">
+            <option value="all">All</option>
+            <option value="Statue">Statue</option>
+            <option value="Sculpture">Sculpture</option>
+            <option value="Music Venue">Music Venue</option>
+            <option value="Museum">Museum</option>
+            <option value="Gallery">Gallery</option>
+            <option value="Event Venue">Event Venue</option>
+        </select>
+        <button type="submit" class="apply-button">Apply Filter</button>
+    </form>
+
+    <!-- Map Container -->
+    <div id="map-container" style="width: 70%; height: 400px; margin: auto;">
+        {{ folium_map_html | safe }}
+    </div>
+{% endblock %}
