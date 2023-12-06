@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS artLocation (
     location_id INT NOT NULL AUTO_INCREMENT,
     location_name VARCHAR(64) NOT NULL,
     location_type VARCHAR(64) NOT NULL,
-    address VARCHAR(64) NOT NULL,
+    address VARCHAR(128) NOT NULL,
     description VARCHAR(1024),
     location_image LONGBLOB,
     latitude DOUBLE,

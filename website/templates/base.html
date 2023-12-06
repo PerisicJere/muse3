@@ -14,6 +14,25 @@
       href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
       crossorigin="anonymous"
     />
+      <style>
+        body {
+            background: rgb(2, 0, 36);
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 27, 121, 1) 29%, rgba(0, 212, 255, 1) 100%);
+            color: #fff;
+            font-family: 'Optima', sans-serif; /* Set Optima as the font family for the body */
+        }
+
+        .navbar {
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 27, 121, 1) 29%, rgba(0, 212, 255, 1) 100%);
+            font-family: 'Optima', sans-serif; /* Set Optima as the font family for the navbar */
+        }
+
+        /* Add the Optima font family to other elements as needed */
+        .container,
+        .alert {
+            font-family: 'Optima', sans-serif;
+        }
+    </style>
 
 
     <title>{% block title %}Home{% endblock %}</title>
@@ -29,7 +48,7 @@
     <div class="collapse navbar-collapse" id="navbar">
         <div class="navbar-nav mr-auto">
             {% if user.is_authenticated %}
-            <a class="nav-item nav-link" id="home" href="/">Home</a>
+            <a class="nav-item nav-link" id="home" href="/">muse</a>
             <a class="nav-item nav-link" id="map" href="/map">map</a>
             <a class="nav-item nav-link" id="user_profile" href="/user_profile">profile</a>
             <a class="nav-item nav-link" id="top_reviewers" href="/top_reviewers">top reviewers</a>

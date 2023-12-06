@@ -13,13 +13,6 @@ from better_profanity import profanity
 views = Blueprint('views', __name__)
 
 
-@views.route('/reviews')
-@login_required
-def reviews():
-    images = ArtLocation.query.all()
-
-    return render_template('all_reviews.html', user=current_user, ArtLocation=images)
-
 
 @views.route('/add_review', methods=['POST'])
 @login_required
@@ -140,24 +133,20 @@ def map():
 @views.route('/all_reviews', methods=['GET', 'POST'])
 def all_reviews():
     if request.method == 'POST':
-        # This block handles the review submission
         stars = int(request.form.get('stars'))
         comment = request.form.get('comment')
         location_id = request.form.get('location_id')
         review_image = request.files.get('review_image')
 
         if location_id is not None:
-            # Call the submit_review function
-            submit_review(stars, comment, location_id, review_image, current_user.user_id)
+            submit_review(stars, comment, location_id, process_review_image(review_image), current_user.user_id)
         else:
             flash('Location ID is missing in the form submission.', category='error')
-            # Handle the error or redirect to an error page as needed
 
-    # This block handles the GET request for displaying reviews
     search_query = request.args.get('search')
     sort_option = request.args.get('sort')
     location_id = request.args.get('location_id')
-    min_rating = request.args.get('min_rating', type=float, default=0)
+    min_rating = request.args.get('min_rating', type=int, default=0)
 
     if sort_option == 'desc':
         sort_order = 'DESC'
@@ -190,6 +179,18 @@ def all_reviews():
                            star_base64=star_base64, location_name=location_name)
 
 
+def process_review_image(review_image):
+    if review_image:
+        try:
+            image_data = review_image.read()
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            return base64_image
+        except Exception as e:
+            flash(f'Error processing review image: {e}', category='error')
+            return None
+    return None
+
+
 def star_icon(img_name):
     image_path = 'website/icons/' + img_name
     with open(image_path, 'rb') as image_file:
@@ -203,66 +204,103 @@ def profanity_filter(x):
     if profanity_is_true:
         return True
 
-def submit_review(stars, comment, location_id, review_image, user_id):
-    if review_image:
-        filename = secure_filename(review_image.filename)
-        review_image_path = os.path.join('uploads', filename)
-        review_image.save(review_image_path)
-    else:
-        review_image_path = None
 
-    try:
-        if profanity_filter(comment):
-            flash('Profanity detected in the comment.', category='error')
+def submit_review(stars, comment, location_id, base64_image, user_id):
+    if base64_image:
+        try:
+            if profanity_filter(comment):
+                flash('Profanity detected in the comment.', category='error')
+                return redirect('/error')
+
+            db.session.execute(
+                text("""
+                    INSERT INTO review (stars, comment, review_image, user_id, location_id)
+                    VALUES (:stars, :comment, :review_image, :user_id, :location_id)
+                    """),
+                {
+                    "stars": stars,
+                    "comment": comment,
+                    "review_image": base64_image,  # Pass base64-encoded data directly to the database
+                    "user_id": user_id,
+                    "location_id": location_id,
+                }
+            )
+
+            if stars < 1 or stars > 5:
+                raise ValueError("Value for stars must be between 1 and 5.")
+
+            db.session.commit()
+            flash('Review submitted successfully!', category='success')
+            redirect_url = '/'
+            print(redirect_url)
+            return redirect(redirect_url)
+
+        except IntegrityError as e:
+            flash('Integrity error: Duplicate entry or other constraint violation.', category='error')
+            db.session.rollback()
             return redirect('/error')
 
-        db.session.execute(
-            text("""
-                INSERT INTO review (stars, comment, review_image, user_id, location_id)
-                VALUES (:stars, :comment, :review_image, :user_id, :location_id)
-                """),
-            {
-                "stars": stars,
-                "comment": comment,
-                "review_image": review_image_path,
-                "user_id": user_id,
-                "location_id": location_id,
-            }
-        )
+        except ValueError as e:
+            # Handle invalid stars rating
+            flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
+            db.session.rollback()
+            return redirect('/error')
 
-        if stars < 1 or stars > 5:
-            raise ValueError("Value for stars must be between 1 and 5.")
+        except Exception as e:
+            flash(f'{e}', category='error')
+            db.session.rollback()
+            return redirect('/error')
 
-        db.session.commit()
-        flash('Review submitted successfully!', category='success')
-        redirect_url = '/'
-        print(redirect_url)
-        return redirect(redirect_url)
+    else:
+        try:
+            if profanity_filter(comment):
+                flash('Profanity detected in the comment.', category='error')
+                return redirect('/error')
 
-    except IntegrityError as e:
-        flash('Integrity error: Duplicate entry or other constraint violation.', category='error')
-        db.session.rollback()
-        return redirect('/error')
+            db.session.execute(
+                text("""
+                    INSERT INTO review (stars, comment, user_id, location_id)
+                    VALUES (:stars, :comment, :user_id, :location_id)
+                    """),
+                {
+                    "stars": stars,
+                    "comment": comment,
+                    "user_id": user_id,
+                    "location_id": location_id,
+                }
+            )
 
-    except ValueError as e:
-        # Handle invalid stars rating
-        flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
-        db.session.rollback()
-        return redirect('/error')
+            if stars < 1 or stars > 5:
+                raise ValueError("Value for stars must be between 1 and 5.")
 
-    except Exception as e:
-        flash(f'{e}', category='error')
-        db.session.rollback()
-        return redirect('/error')  # Redirect to an error page or handle the error appropriately
+            db.session.commit()
+            flash('Review submitted successfully!', category='success')
+            redirect_url = '/'
+            print(redirect_url)
+            return redirect(redirect_url)
 
+        except IntegrityError as e:
+            flash('Integrity error: Duplicate entry or other constraint violation.', category='error')
+            db.session.rollback()
+            return redirect('/error')
 
+        except ValueError as e:
+            # Handle invalid stars rating
+            flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
+            db.session.rollback()
+            return redirect('/error')
+
+        except Exception as e:
+            flash(f'{e}', category='error')
+            db.session.rollback()
+            return redirect('/error')
 
 @views.route('/user_profile', methods=['GET'])
 @login_required
 def user_profile():
     # Using raw SQL to fetch reviews for the current user
     user_reviews_query = text("""
-        SELECT r.stars, r.comment, al.location_name
+        SELECT r.stars, r.comment, al.location_name, r.review_image
         FROM MUSE_DB.review r
         JOIN MUSE_DB.artLocation al ON r.location_id = al.location_id
         WHERE r.user_id = :user_id
@@ -276,6 +314,7 @@ def user_profile():
             "stars": row.stars,
             "comment": row.comment,
             "location_name": row.location_name,
+            "review_image": base64.b64encode(row.review_image).decode('utf-8') if row.review_image else "",
         }
         for row in result
     ]

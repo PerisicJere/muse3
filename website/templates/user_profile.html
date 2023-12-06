@@ -1,7 +1,7 @@
 <!-- user_profile.html -->
 
 {% extends "base.html" %}
-{% block title %}User Profile{% endblock %}
+{% block title %}{{user.displayName}}'s Profile{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,7 @@
     <div class="row">
         <!-- Left side: User Information -->
         <div class="col-md-6">
-            <h2>User Profile</h2>
+            <h2>{{user.displayName}}'s Profile</h2>
             <div>
                 <p><strong>Username:</strong> {{ user.displayName }}</p>
                 <p><strong>Email:</strong> {{ user.email }}</p>
@@ -19,29 +19,30 @@
 
         <!-- Right side: User Activity -->
         <div class="col-md-6">
-            <h1 align="center">User Activity</h1>
+            <h1 align="center">{{user.displayName}}'s Activity</h1>
 
-            <!-- Display user-related information/activity -->
             <div class="activity-container">
-                <!-- Display user's reviews -->
-                {% if user_reviews %}
-                    <h3>User Reviews:</h3>
-                    <div class="review-list">
-                        {% for review in user_reviews %}
-                            <div class="review-box">
-                                <p><strong>Location:</strong> {{ review.location_name }}</p>
-                                <p><strong>Stars:</strong>
-                                    {% for _ in range(review.stars) %}
-                                        <img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">
-                                    {% endfor %}
-                                </p>
-                                <p><strong>Comment:</strong> {{ review.comment }}</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p>No reviews available.</p>
-                {% endif %}
+<!-- Display user's reviews -->
+{% if user_reviews %}
+    <h3>{{user.displayName}}'s Reviews:</h3>
+    <div class="review-list">
+        {% for review in user_reviews %}
+            <div class="review-box">
+                <p><strong>Location:</strong> {{ review.location_name }}</p>
+                <p><strong>Stars:</strong>
+                    {% for _ in range(review.stars) %}
+                        <img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">
+                    {% endfor %}
+                </p>
+                <p><strong>Comment:</strong> {{ review.comment }}</p>
+
+
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No reviews available.</p>
+{% endif %}
             </div>
         </div>
     </div>
