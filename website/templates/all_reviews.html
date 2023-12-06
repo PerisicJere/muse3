@@ -11,10 +11,9 @@
         <div class="col-md-6">
             <h2>Submit a Review</h2>
             <form action="{{ url_for('views.all_reviews') }}" method="post">
-                <!-- Add form fields for stars, comment, and review image -->
                 <label for="stars">Stars:</label>
                 <input type="hidden" name="location_id" value="{{ location_id }}">
-                <input type="number" name="stars" id="stars" class="form-control" placeholder="Enter stars (1-5)" required min="1" max="5">
+                <input type="number" name="stars" id="stars" class="form-control" placeholder="Enter stars (1-5)" >
 
                 <label for="comment">Comment:</label>
                 <textarea name="comment" id="comment" class="form-control" placeholder="Enter your comment" required></textarea>
@@ -54,7 +53,7 @@
                 {% for review in reviews %}
                     <div class="review" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center;">
                         <div style="flex-grow: 1; padding-left: 10px;">
-                            <h4>Stars: {% for _ in range(review.stars) %}<img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">{% endfor %}</h4>
+                            <h4>Stars: {% for _ in range(review.stars|int) %}<img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">{% endfor %}</h4>
                             <p>Comment: {{ review.comment }}</p>
                             <p>User: {{ review.displayName }}</p>
                             {% if review.review_image %}

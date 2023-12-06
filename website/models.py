@@ -11,6 +11,7 @@ class ArtLocation(db.Model):
     location_image = db.Column(db.LargeBinary)
 
 
+
 class Review(db.Model):
     review_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
@@ -18,8 +19,8 @@ class Review(db.Model):
     stars = db.Column(db.Float())
     comment = db.Column(db.String(1024))
     review_image = db.Column(db.LargeBinary)
-    upvote = db.Column(db.Integer())
-    downvote = db.Column(db.Integer())
+    location = db.relationship('ArtLocation', backref='reviews')
+
 
     def __init__(self, stars, comment, review_image, user_id):
         self.stars = stars
@@ -32,7 +33,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(512))
     displayName = db.Column(db.String(10), unique=True)
-    reviews = db.relationship('Review')
+    reviews = db.relationship('Review', backref='user', cascade='all, delete-orphan')
 
     def get_id(self):
         return str(self.user_id)

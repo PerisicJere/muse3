@@ -1,0 +1,65 @@
+<!-- user_profile.html -->
+
+{% extends "base.html" %}
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <!-- Left side: User Information -->
+        <div class="col-md-6">
+            <h2>User Profile</h2>
+            <div>
+                <p><strong>Username:</strong> {{ user.displayName }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <!-- Add other user information as needed -->
+            </div>
+        </div>
+
+        <!-- Right side: User Activity -->
+        <div class="col-md-6">
+            <h1 align="center">User Activity</h1>
+
+            <!-- Display user-related information/activity -->
+            <div class="activity-container">
+                <!-- Display user's reviews -->
+                {% if user_reviews %}
+                    <h3>User Reviews:</h3>
+                    <div class="review-list">
+                        {% for review in user_reviews %}
+                            <div class="review-box">
+                                <p><strong>Location:</strong> {{ review.location_name }}</p>
+                                <p><strong>Stars:</strong>
+                                    {% for _ in range(review.stars) %}
+                                        <img src="data:image/png;base64,{{ star_base64 }}" alt="Star" style="height: 20px; width: 20px;">
+                                    {% endfor %}
+                                </p>
+                                <p><strong>Comment:</strong> {{ review.comment }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No reviews available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Style for the review boxes */
+    .review-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .review-box {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+</style>
+
+{% endblock %}

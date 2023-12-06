@@ -1,0 +1,29 @@
+<!-- top_reviewers.html -->
+
+{% extends "base.html" %}
+{% block title %}Top Reviewers{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <!-- Display Top Reviewers -->
+        <div class="col-md-12">
+            <h1 align="center">Top Reviewers</h1>
+
+            <!-- Display Top Reviewers -->
+            <div class="reviewers-container">
+                {% for reviewer in top_reviewers %}
+                    <div class="reviewer" style="margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center;">
+                        <div style="flex-grow: 1; padding-left: 10px;">
+                            <h4> {{ reviewer.displayName }}</h4>
+                            <p>Total Reviews: {{ reviewer.num_reviews }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

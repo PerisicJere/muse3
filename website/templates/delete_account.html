@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Account{% endblock %}
+
+{% block content %}
+  <form method="POST" action="{{ url_for('views.delete_account') }}">
+    <h3 align="center">Delete Account</h3>
+    <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+    <br />
+    <button type="submit" class="btn btn-danger">Delete My Account</button>
+  </form>
+{% endblock %}

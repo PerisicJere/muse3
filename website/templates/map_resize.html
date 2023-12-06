@@ -6,14 +6,13 @@
     div#navbar.collapse.navbar-collapse .nav-item.nav-link#map {
         width: 50px;
         height: 40px;
-        position: relative; /* or absolute, fixed, etc. */
+        position: relative;
         top: 4px;
         left: 5px;
     }
 </style>
 
 <div class="filter-search-container">
-    <!-- Dropdown for Location Types -->
     <form method="get" class="filter-form">
         <label for="location-type">Filter by Location Type:</label>
         <select name="location_type" id="location-type" class="styled-dropdown">
@@ -28,7 +27,6 @@
         <button type="submit" class="apply-button">Apply Filter</button>
     </form>
 
-    <!-- Search by Address or Installation Name -->
     <form method="get" class="search-form">
         <label for="search">Search by Address or Installation Name:</label>
         <input type="text" name="search" id="search" placeholder="Enter address or name">
@@ -36,7 +34,6 @@
     </form>
 </div>
 
-<!-- Map Container -->
 <div id="map-container" style="width: 70%; height: 400px; margin: auto;">
     {{ folium_map_html | safe }}
 </div>

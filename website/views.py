@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, make_response
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
+from sqlalchemy.exc import NoResultFound, IntegrityError, InvalidRequestError
 from werkzeug.utils import secure_filename
 from . import db
 from website.models import Review, ArtLocation, User
@@ -197,6 +198,7 @@ def star_icon(img_name):
 
 def submit_review(stars, comment, location_id, review_image, user_id):
     print(location_id)
+
     if review_image:
         filename = secure_filename(review_image.filename)
         review_image_path = os.path.join('uploads', filename)
@@ -204,25 +206,125 @@ def submit_review(stars, comment, location_id, review_image, user_id):
     else:
         review_image_path = None
 
-    # Using raw SQL to insert the review
-    sql_insert_review = text("""
-    INSERT INTO review (stars, comment, review_image, user_id, location_id)
-    VALUES (:stars, :comment, :review_image, :user_id, :location_id)
+    try:
+        # Insert the review into the database
+        db.session.execute(
+            """
+            INSERT INTO review (stars, comment, review_image, user_id, location_id)
+            VALUES (:stars, :comment, :review_image, :user_id, :location_id)
+            """,
+            {
+                "stars": stars,
+                "comment": comment,
+                "review_image": review_image_path,
+                "user_id": user_id,
+                "location_id": location_id,
+            }
+        )
+
+        # Check the integrity constraint for the stars rating
+        if stars < 0 or stars > 5:
+            raise ValueError("Value for stars must be between 0 and 5.")
+
+        # Commit the transaction (Flask-SQLAlchemy will handle this automatically)
+        db.session.commit()
+
+        flash('Review submitted successfully!', category='success')
+
+        redirect_url = f'/reviews?location_id={location_id}'
+        return redirect(redirect_url)
+
+    except IntegrityError as e:
+        # Handle integrity constraint violations (e.g., unique constraint)
+        flash('Integrity error: Duplicate entry or other constraint violation.', category='error')
+        return redirect('/error')
+
+    except ValueError as e:
+        # Handle invalid stars rating
+        flash(f'Stars need to be from 1 to 5, you entered {stars}',category='error')
+        return redirect('/error')
+
+    except Exception as e:
+        flash(f'Stars need to be from 1 to 5, you entered {stars}',category='error')
+        return redirect('/error')  # Redirect to an error page or handle the error appropriately
+
+
+@views.route('/user_profile', methods=['GET'])
+@login_required
+def user_profile():
+    # Using raw SQL to fetch reviews for the current user
+    user_reviews_query = text("""
+        SELECT r.stars, r.comment, al.location_name
+        FROM MUSE_DB.review r
+        JOIN MUSE_DB.artLocation al ON r.location_id = al.location_id
+        WHERE r.user_id = :user_id
+        ORDER BY r.stars DESC
     """)
-    db.session.execute(
-        sql_insert_review,
+
+    result = db.session.execute(user_reviews_query, {"user_id": current_user.user_id})
+
+    user_reviews = [
         {
-            "stars": stars,
-            "comment": comment,
-            "review_image": review_image_path,
-            "user_id": user_id,
-            "location_id": location_id,
+            "stars": row.stars,
+            "comment": row.comment,
+            "location_name": row.location_name,
         }
-    )
-    db.session.commit()
+        for row in result
+    ]
+    star_base64 = star_icon('star.png')
+    return render_template('user_profile.html', user=current_user, user_reviews=user_reviews, star_base64=star_base64)
 
-    flash('Review submitted successfully!', category='success')
 
-    redirect_url = f'/reviews?location_id={location_id}'
-    return redirect(redirect_url)
+def onDeleteUserTrigger(user_id):
+    # First ASF
+    # Creates a trigger that automatically deletes a user's reviews when the user account is deleted
+    with db.engine.connect() as connection:
+        query = text("""
+            DROP TRIGGER IF EXISTS `delete_user_reviews`;
+            CREATE TRIGGER delete_user_reviews
+            BEFORE DELETE ON user
+            FOR EACH ROW
+            BEGIN
+                DELETE FROM review WHERE user_id = :user_id;
+            END;
+        """)
+        connection.execute(query, {"user_id": user_id})
 
+
+@views.route('/delete_account', methods=['POST', 'GET'])
+@login_required
+def delete_account():
+    if request.method == 'POST':
+        user_id = current_user.get_id()
+        onDeleteUserTrigger(user_id)
+
+        db.session.commit()
+        logout_user()
+
+        return redirect(url_for('home'))
+
+    return render_template('delete_account.html', user=current_user)
+
+@views.route('/top_reviewers')
+def top_reviewers():
+    # Using raw SQL to fetch the top 10 reviewers
+    sql_query = text("""
+        SELECT user.user_id, user.displayName, COUNT(review.review_id) AS num_reviews
+        FROM user
+        INNER JOIN review ON review.user_id = user.user_id
+        GROUP BY user.user_id
+        ORDER BY num_reviews DESC
+        LIMIT 10
+    """)
+
+    result = db.session.execute(sql_query)
+    top_reviewers = [
+        {
+            "user_id": row.user_id,
+            "displayName": row.displayName,
+            "num_reviews": row.num_reviews,
+        }
+        for row in result
+    ]
+
+    return render_template('top_reviewers.html', user=current_user, top_reviewers=top_reviewers)
