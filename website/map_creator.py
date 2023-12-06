@@ -5,7 +5,7 @@ from folium.plugins import MarkerCluster
 import geocoder
 
 def create_folium_map(selected_type='all', search_query=None):
-    config_file = "connectorConfig.json"
+    config_file = "website/connectorConfig.json"
     with open(config_file, "r") as f:
         config = json.load(f)
         connection_config = config["mysql"]

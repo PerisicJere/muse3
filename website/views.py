@@ -1,13 +1,14 @@
 import os
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, make_response
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user, logout_user
-from sqlalchemy.exc import NoResultFound, IntegrityError, InvalidRequestError
+from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 from . import db
-from website.models import Review, ArtLocation, User
+from website.models import Review, ArtLocation
 from sqlalchemy import text
 import base64
 from website.map_creator import create_folium_map
+from better_profanity import profanity
 
 views = Blueprint('views', __name__)
 
@@ -196,9 +197,14 @@ def star_icon(img_name):
     return star_base64
 
 
-def submit_review(stars, comment, location_id, review_image, user_id):
-    print(location_id)
+def profanity_filter(x):
+    profanity.load_censor_words()
+    profanity_is_true = profanity.contains_profanity(x)
+    if profanity_is_true:
+        return True
 
+
+def submit_review(stars, comment, location_id, review_image, user_id):
     if review_image:
         filename = secure_filename(review_image.filename)
         review_image_path = os.path.join('uploads', filename)
@@ -207,6 +213,11 @@ def submit_review(stars, comment, location_id, review_image, user_id):
         review_image_path = None
 
     try:
+        # Call the profanity filter function
+        if profanity_filter(comment):
+            flash('Profanity detected in the comment.', category='error')
+            return redirect('/error')
+
         # Insert the review into the database
         db.session.execute(
             """
@@ -241,11 +252,11 @@ def submit_review(stars, comment, location_id, review_image, user_id):
 
     except ValueError as e:
         # Handle invalid stars rating
-        flash(f'Stars need to be from 1 to 5, you entered {stars}',category='error')
+        flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
         return redirect('/error')
 
     except Exception as e:
-        flash(f'Stars need to be from 1 to 5, you entered {stars}',category='error')
+        flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
         return redirect('/error')  # Redirect to an error page or handle the error appropriately
 
 
@@ -304,6 +315,7 @@ def delete_account():
         return redirect(url_for('home'))
 
     return render_template('delete_account.html', user=current_user)
+
 
 @views.route('/top_reviewers')
 def top_reviewers():
