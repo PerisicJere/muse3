@@ -1,10 +1,17 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from . import db
 from .models import User
-from werkzeug.security import generate_password_hash, check_password_hash, gen_salt
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
+from better_profanity import profanity
+
 auth = Blueprint('auth', __name__)
 
+def profanity_filter(x):
+    profanity.load_censor_words()
+    profanity_is_true = profanity.contains_profanity(x)
+    if profanity_is_true:
+        return True
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -41,7 +48,9 @@ def sign_up():
         password2 = request.form.get('password2')
 
         user = User.query.filter_by(email=email).first()
-        if user:
+        if profanity_filter(displayName):
+            flash('Username can\'t use profanities', category='error')
+        elif user:
             flash('Email already exists.', category='error')
         elif len(email) < 4:
             flash("Email is not valid", category='error')

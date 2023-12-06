@@ -203,7 +203,6 @@ def profanity_filter(x):
     if profanity_is_true:
         return True
 
-
 def submit_review(stars, comment, location_id, review_image, user_id):
     if review_image:
         filename = secure_filename(review_image.filename)
@@ -213,17 +212,15 @@ def submit_review(stars, comment, location_id, review_image, user_id):
         review_image_path = None
 
     try:
-        # Call the profanity filter function
         if profanity_filter(comment):
             flash('Profanity detected in the comment.', category='error')
             return redirect('/error')
 
-        # Insert the review into the database
         db.session.execute(
-            """
-            INSERT INTO review (stars, comment, review_image, user_id, location_id)
-            VALUES (:stars, :comment, :review_image, :user_id, :location_id)
-            """,
+            text("""
+                INSERT INTO review (stars, comment, review_image, user_id, location_id)
+                VALUES (:stars, :comment, :review_image, :user_id, :location_id)
+                """),
             {
                 "stars": stars,
                 "comment": comment,
@@ -233,31 +230,31 @@ def submit_review(stars, comment, location_id, review_image, user_id):
             }
         )
 
-        # Check the integrity constraint for the stars rating
-        if stars < 0 or stars > 5:
-            raise ValueError("Value for stars must be between 0 and 5.")
+        if stars < 1 or stars > 5:
+            raise ValueError("Value for stars must be between 1 and 5.")
 
-        # Commit the transaction (Flask-SQLAlchemy will handle this automatically)
         db.session.commit()
-
         flash('Review submitted successfully!', category='success')
-
-        redirect_url = f'/reviews?location_id={location_id}'
+        redirect_url = '/'
+        print(redirect_url)
         return redirect(redirect_url)
 
     except IntegrityError as e:
-        # Handle integrity constraint violations (e.g., unique constraint)
         flash('Integrity error: Duplicate entry or other constraint violation.', category='error')
+        db.session.rollback()
         return redirect('/error')
 
     except ValueError as e:
         # Handle invalid stars rating
         flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
+        db.session.rollback()
         return redirect('/error')
 
     except Exception as e:
-        flash(f'Stars need to be from 1 to 5, you entered {stars}', category='error')
+        flash(f'{e}', category='error')
+        db.session.rollback()
         return redirect('/error')  # Redirect to an error page or handle the error appropriately
+
 
 
 @views.route('/user_profile', methods=['GET'])
