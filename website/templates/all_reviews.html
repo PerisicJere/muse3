@@ -8,22 +8,23 @@
 <div class="container">
     <div class="row">
         <!-- Left side: Review Submission Form -->
-        <div class="col-md-6">
-            <h2>Submit a Review</h2>
-            <form action="{{ url_for('views.all_reviews') }}" method="post">
-                <label for="stars">Stars:</label>
-                <input type="hidden" name="location_id" value="{{ location_id }}">
-                <input type="number" name="stars" id="stars" class="form-control" placeholder="Enter stars (1-5)" >
+<div class="col-md-6">
+    <h2>Submit a Review</h2>
+    <form action="{{ url_for('views.all_reviews') }}" method="post" enctype="multipart/form-data">
+        <label for="stars">Stars:</label>
+        <input type="hidden" name="location_id" value="{{ location_id }}">
+        <input type="number" name="stars" id="stars" class="form-control" placeholder="Enter stars (1-5)">
 
-                <label for="comment">Comment:</label>
-                <textarea name="comment" id="comment" class="form-control" placeholder="Enter your comment" required></textarea>
+        <label for="comment">Comment:</label>
+        <textarea name="comment" id="comment" class="form-control" placeholder="Enter your comment" required></textarea>
 
-                <label for="review_image">Review Image:</label>
-                <input type="file" name="review_image" id="review_image" class="form-control">
+        <label for="review_image">Review Image:</label>
+        <input type="file" name="review_image" id="review_image" class="form-control">
 
-                <button type="submit" class="btn btn-success mt-2">Submit Review</button>
-            </form>
-        </div>
+        <button type="submit" class="btn btn-success mt-2">Submit Review</button>
+    </form>
+</div>
+
 
         <!-- Right side: Display Reviews -->
         <div class="col-md-6">

@@ -10,6 +10,14 @@
         top: 4px;
         left: 5px;
     }
+
+    .styled-dropdown,
+    #address {
+        width: 200px;
+        padding: 10px;
+        font-size: 16px;
+        color: black;
+    }
 </style>
 
 <div class="filter-search-container">
@@ -27,10 +35,10 @@
         <button type="submit" class="apply-button">Apply Filter</button>
     </form>
 
-    <form method="get" class="search-form">
+    <form method="get" class="search-form mb-20">
         <label for="search">Search by Address or Installation Name:</label>
-        <input type="text" name="search" id="search" placeholder="Enter address or name">
-        <button type="submit" class="search-button">Search</button>
+        <input type="text" name="search" id="search" class="styled-dropdown" placeholder="Enter address or name">
+        <button type="submit" class="search-button ml-1.5">Search</button>
     </form>
 </div>
 
