@@ -42,4 +42,3 @@ def onDeleteUserTrigger(user_id):
 
 
 
-onDeleteUserTrigger(198)

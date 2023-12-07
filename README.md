@@ -8,19 +8,24 @@
 ```bash
 pip install -r requirements.txt
 ```
-
+## Database setup
+- if you don't have database set-up, use:
+- Inside our code there are two json files for database config
+- First json is called connectorConfig.json, and it is used for mysql connection, second is called config.json, and it's used with SQLAlchemy.
+```bash
+python create_tables.py
+python insert_into_tables.py
+```
+- If the code was properly cloned, and both jsons were set up properly, this commands should work.
+- Additionally, data makers are included, so you can generate as many reviews and users you want.
+- Data makers just need to be run, and they produce csv files.
+- All the csv files are provided.
+- 
 ## Running The App
 - To run if you have database set-up.
 ```bash
 python main.py
 ```
-- if you don't have database set-up, use:
-```bash 
-python create_tables.py
-python insert_into_tables.py
-```
-- Additionally, data makers are included, so you can generate as many reviews and users you want.
-- All the csv files are provided.
 
 ## Authors
 - William Lago

@@ -1,9 +1,0 @@
-{
-  "database": {
-    "user": "root",
-    "password": "Kr4tos12.",
-    "host": "localhost",
-    "database_name": "MUSE_DB",
-    "auth_plugin": "mysql_native_password"
-  }
-}

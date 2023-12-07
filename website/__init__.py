@@ -8,7 +8,7 @@ from flask_login import LoginManager
 db = SQLAlchemy()
 DB_NAME = "MUSE_DB"
 def load_database_config():
-    with open('website/conifg.json', 'r') as file:
+    with open('website/config.json', 'r') as file:
         config = json.load(file)
     return config['database']
 
