@@ -1,14 +1,18 @@
+import json
 import os
+import re
+import mysql.connector
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user, logout_user
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 from . import db
-from website.models import Review, ArtLocation
+from website.models import Review, ArtLocation, User
 from sqlalchemy import text
 import base64
 from website.map_creator import create_folium_map
 from better_profanity import profanity
+
 
 views = Blueprint('views', __name__)
 
@@ -320,38 +324,83 @@ def user_profile():
     ]
     star_base64 = star_icon('star.png')
     return render_template('user_profile.html', user=current_user, user_reviews=user_reviews, star_base64=star_base64)
+def create_delete_user_trigger():
+    # Get the directory of the current Python script
+    current_dir = os.path.dirname(os.path.realpath(__file__))
 
+    # Construct the absolute path to connectorConfig.json
+    config_file_path = os.path.join(current_dir, "connectorConfig.json")
 
-def onDeleteUserTrigger(user_id):
-    # First ASF
-    # Creates a trigger that automatically deletes a user's reviews when the user account is deleted
-    with db.engine.connect() as connection:
-        query = text("""
-            DROP TRIGGER IF EXISTS `delete_user_reviews`;
-            CREATE TRIGGER delete_user_reviews
-            BEFORE DELETE ON user
-            FOR EACH ROW
-            BEGIN
-                DELETE FROM review WHERE user_id = :user_id;
-            END;
-        """)
-        connection.execute(query, {"user_id": user_id})
+    try:
+        with open(config_file_path, "r") as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: '{config_file_path}' file not found.")
+        return
+    except json.JSONDecodeError as e:
+        print(f"Error decoding '{config_file_path}': {e}")
+        return
 
+    connection_config = config.get("mysql")
+    if not connection_config:
+        print("Error: MySQL configuration not found in 'connectorConfig.json'.")
+        return
+
+    try:
+        connection = mysql.connector.connect(**connection_config)
+        cursor = connection.cursor()
+
+        # Drop the trigger if it already exists
+        cursor.execute("DROP TRIGGER IF EXISTS delete_user_trigger")
+
+        # Create the trigger
+        create_trigger_query = """
+        CREATE TRIGGER delete_user_trigger
+        BEFORE DELETE ON user
+        FOR EACH ROW
+        BEGIN
+            DELETE FROM review WHERE user_id = OLD.user_id;
+        END;
+        """
+        cursor.execute(create_trigger_query)
+
+        # Commit the changes
+        connection.commit()
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+
+create_delete_user_trigger()
 
 @views.route('/delete_account', methods=['POST', 'GET'])
 @login_required
-def delete_account():
+def delete_user():
     if request.method == 'POST':
-        user_id = current_user.get_id()
-        onDeleteUserTrigger(user_id)
+        user_id_to_delete = current_user.user_id
+        print(user_id_to_delete)
 
-        db.session.commit()
-        logout_user()
+        try:
+            # Assuming the 'User' and 'Review' tables exist
+            db.session.delete(current_user)
+            db.session.commit()
 
-        return redirect(url_for('home'))
+            print(f"User with ID {user_id_to_delete} and associated reviews deleted successfully.")
 
+            logout_user()
+            return redirect(url_for('auth.sign_up'))
+        except Exception as e:
+            print(f"Error deleting user: {e}")
+
+    # If the request method is GET, render the delete account confirmation page
     return render_template('delete_account.html', user=current_user)
-
 
 @views.route('/top_reviewers')
 def top_reviewers():

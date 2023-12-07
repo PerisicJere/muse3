@@ -6,4 +6,4 @@ mysqlclient
 mysql-connector-python
 folium
 geocoder
-
+re
