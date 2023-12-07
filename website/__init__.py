@@ -1,3 +1,4 @@
+import json
 import secrets
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -6,12 +7,19 @@ from flask_login import LoginManager
 
 db = SQLAlchemy()
 DB_NAME = "MUSE_DB"
-
+def load_database_config():
+    with open('website/conifg.json', 'r') as file:
+        config = json.load(file)
+    return config['database']
 
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = secrets.token_hex(16)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://root:Kr4tos12.@localhost/{DB_NAME}?auth_plugin=mysql_native_password'
+    database_config = load_database_config()
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"mysql+mysqlconnector://{database_config['user']}:{database_config['password']}@"
+        f"{database_config['host']}/{database_config['database_name']}?auth_plugin={database_config['auth_plugin']}"
+    )
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
